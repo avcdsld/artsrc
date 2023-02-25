@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Card from '@mui/material/Card';
@@ -132,7 +131,6 @@ const SourcePreview = ({
                 padding: [0, 0, 'default'],
               }}
               onClick={() => {
-                // window.open(`${mediaUrl}/${tokenId}.png`);
                 window.open(
                   `https://nftstorage.link/ipfs/${data.imageIpfsCid}`
                 );

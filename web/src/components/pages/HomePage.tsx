@@ -1,10 +1,10 @@
-import HomeProjects from 'components/HomeProjects';
+import Home from 'components/Home';
 import Page from 'components/Page';
 
 const HomePage = () => {
   return (
     <Page>
-      <HomeProjects />
+      <Home />
     </Page>
   );
 };
