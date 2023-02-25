@@ -22,9 +22,7 @@ const UserSources = ({ address }: Props) => {
   const [currentPage, setCurrentPage] = useState(0);
   const fromIndex = currentPage * sourcesPerPage;
   const upToIndex = sourcesPerPage;
-  const [orderDirection, setOrderDirection] = useState<OrderDirection>(
-    OrderDirection.DESC
-  );
+  const [orderDirection] = useState<OrderDirection>(OrderDirection.DESC);
   const { loading, error, data } = useUserSources({
     address,
     fromIndex,
