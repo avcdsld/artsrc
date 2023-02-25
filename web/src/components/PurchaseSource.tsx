@@ -1,9 +1,7 @@
-import { useCallback, useState } from 'react';
-import moment from 'moment';
+import { useState } from 'react';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
-import Alert from '@mui/material/Alert';
 import { Source } from 'utils/types';
 import MintSuccessDialog from './MintSuccessDialog';
 
@@ -12,9 +10,9 @@ interface Props {
 }
 
 const PurchaseSource = ({ source }: Props) => {
-  const [pending, setPending] = useState(false);
+  const [pending] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
-  const [mintedTokenId, setMintedTokenId] = useState<number | null>(null);
+  const [mintedTokenId] = useState<number | null>(null);
 
   const mint = () => {
     // if (!provider || !mintContractAddress) {

@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import Typography from '@mui/material/Typography';
-import Tooltip from '@mui/material/Tooltip';
 import Link from '@mui/material/Link';
 import { resolveDotFindName } from 'utils/dotFind';
 import { resolveFlownsName } from 'utils/flowns';
