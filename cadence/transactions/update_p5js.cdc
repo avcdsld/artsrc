@@ -1,5 +1,6 @@
 import "NonFungibleToken"
 import "ArtSource"
+import "ArtSourceCodes"
 
 transaction(
     id: UInt64,
@@ -17,8 +18,12 @@ transaction(
             description: description,
             imageIpfsCid: imageIpfsCid,
             artistName: artistName,
-            code: code,
-            contractCode: nil
+            codes: [
+                ArtSourceCodes.P5JsCode(
+                    code: code,
+                    extraMetadata: {}
+                )
+            ]
         )
     }
 }

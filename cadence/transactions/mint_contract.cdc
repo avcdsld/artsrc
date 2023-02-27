@@ -1,5 +1,6 @@
 import "NonFungibleToken"
 import "ArtSource"
+import "ArtSourceCodes"
 
 transaction(
     artType: String,
@@ -20,19 +21,20 @@ transaction(
         }
 
         let collectionRef = signer.borrow<&ArtSource.Collection>(from: ArtSource.CollectionStoragePath) ?? panic("Not found")
-        let sourceNFT <- collectionRef.createSource(
+        collectionRef.createSource(
             artType: artType,
             title: title,
             description: description,
             imageIpfsCid: imageIpfsCid,
             artistName: artistName,
-            code: nil,
-            contractCode: ArtSource.ContractCode(
-                accountAddress: contractAccountAddress,
-                contractName: contractName,
-                authAccountForOwnershipChecking: &signer as &AuthAccount
-            )
+            codes: [
+                ArtSourceCodes.ContractCode(
+                    accountAddress: contractAccountAddress,
+                    contractName: contractName,
+                    authAccountForOwnershipChecking: &signer as &AuthAccount,
+                    extraMetadata: {}
+                )
+            ]
         )
-        collectionRef.deposit(token: <- sourceNFT)
     }
 }

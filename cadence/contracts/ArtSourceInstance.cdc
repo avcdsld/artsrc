@@ -1,23 +1,18 @@
 import "NonFungibleToken"
 import "MetadataViews"
+import "ArtSource"
 
-pub contract ArtSource: NonFungibleToken {
+pub contract ArtSourceInstance: NonFungibleToken {
     pub event ContractInitialized()
     pub event Withdraw(id: UInt64, from: Address?)
     pub event Deposit(id: UInt64, to: Address?)
 
-    // TODO: add events
+    // TODO: add eventss
 
     pub let CollectionStoragePath: StoragePath
     pub let CollectionPublicPath: PublicPath
     pub let CollectionPrivatePath: PrivatePath
     pub var totalSupply: UInt64
-
-    pub struct interface ICode {
-        pub fun getCode(): String
-        pub fun getExtraMetadata(): {String: AnyStruct}
-        pub fun createInstanceHook()
-    }
 
     pub resource interface NFTPublic {
         pub let id: UInt64
@@ -29,42 +24,43 @@ pub contract ArtSource: NonFungibleToken {
         pub fun getTitle(): String
         pub fun getDescription(): String
         pub fun getImageIpfsCid(): String
-        pub fun getCodes(): [{ICode}]
+        pub fun getCodes(): [{ArtSource.ICode}]
         pub fun getVersion(): UInt16
         pub fun getCreatedAt(): UFix64
         pub fun getUpdatedAt(): UFix64
-
-        // Information required when creating instance NFTs.
-        pub fun getMaxNumOfInstances(): UInt32?
-        pub fun getNumOfInstances(): UInt32
     }
 
     pub resource NFT: NFTPublic, NonFungibleToken.INFT, MetadataViews.Resolver {
         pub let id: UInt64
+        pub let sourceID: UInt64
         pub let creatorAddress: Address
-        access(account) var artType: String
-        access(account) var title: String
-        access(account) var description: String
-        access(account) var imageIpfsCid: String
-        access(account) var artistName: String
-        access(account) var codes: [{ICode}]
-        access(account) var version: UInt16
-        access(account) var createdAt: UFix64
-        access(account) var updatedAt: UFix64
-        access(account) var maxNumOfInstances: UInt32?
-        access(account) var numOfInstances: UInt32
+        pub let artType: String
+        pub let title: String
+        pub let description: String
+        pub let imageIpfsCid: String
+        pub let artistName: String
+        pub let codes: [{ArtSource.ICode}]
+        pub let version: UInt16
+        pub let createdAt: UFix64
+        pub let updatedAt: UFix64
 
         init(
+            sourceID: UInt64,
             creatorAddress: Address,
             artType: String,
             title: String,
             description: String,
             imageIpfsCid: String,
             artistName: String,
-            codes: [{ICode}]
+            codes: [{ArtSource.ICode}],
+            version: UInt16,
+            createdAt: UFix64,
+            updatedAt: UFix64
         ) {
-            ArtSource.totalSupply = ArtSource.totalSupply + 1
-            self.id = ArtSource.totalSupply
+            ArtSourceInstance.totalSupply = ArtSourceInstance.totalSupply + 1
+            self.id = ArtSourceInstance.totalSupply
+            
+            self.sourceID = sourceID
             self.creatorAddress = creatorAddress
             self.artType = artType
             self.title = title
@@ -72,50 +68,9 @@ pub contract ArtSource: NonFungibleToken {
             self.imageIpfsCid = imageIpfsCid
             self.artistName = artistName
             self.codes = codes
-            self.version = 1
-            let currentBlock = getCurrentBlock()
-            self.createdAt = currentBlock.timestamp
-            self.updatedAt = currentBlock.timestamp
-            self.maxNumOfInstances = 0
-            self.numOfInstances = 0
-        }
-
-        pub fun update(
-            title: String?,
-            description: String?,
-            imageIpfsCid: String?,
-            artistName: String?,
-            codes: [{ICode}]?
-        ) {
-            var updated = false
-            if title != nil && title! != self.title {
-                self.title = title!
-                updated = true
-            }
-            if description != nil && description! != self.description {
-                self.description = description!
-                updated = true
-            }
-            if imageIpfsCid != nil && imageIpfsCid! != self.imageIpfsCid {
-                self.imageIpfsCid = imageIpfsCid!
-                updated = true
-            }
-            if artistName != nil && artistName! != self.artistName {
-                self.artistName = artistName!
-                updated = true
-            }
-            if codes != nil {
-                self.codes = codes!
-                updated = true
-            }
-            if updated {
-                self.version = self.version + 1
-                self.updatedAt = getCurrentBlock().timestamp
-            }
-        }
-
-        pub fun setMaxNumOfInstances(maxNumOfInstances: UInt32?) {
-            self.maxNumOfInstances = maxNumOfInstances
+            self.version = version
+            self.createdAt = createdAt
+            self.updatedAt = updatedAt
         }
 
         pub fun getViews(): [Type] {
@@ -152,14 +107,14 @@ pub contract ArtSource: NonFungibleToken {
                     return MetadataViews.ExternalURL("")
                 case Type<MetadataViews.NFTCollectionData>():
                     return MetadataViews.NFTCollectionData(
-                        storagePath: ArtSource.CollectionStoragePath,
-                        publicPath: ArtSource.CollectionPublicPath,
-                        providerPath: ArtSource.CollectionPrivatePath,
-                        publicCollection: Type<&ArtSource.Collection{ArtSource.CollectionPublic}>(),
-                        publicLinkedType: Type<&ArtSource.Collection{ArtSource.CollectionPublic, NonFungibleToken.CollectionPublic, NonFungibleToken.Receiver, MetadataViews.ResolverCollection}>(),
-                        providerLinkedType: Type<&ArtSource.Collection{ArtSource.CollectionPublic, NonFungibleToken.CollectionPublic, NonFungibleToken.Provider, MetadataViews.ResolverCollection}>(),
+                        storagePath: ArtSourceInstance.CollectionStoragePath,
+                        publicPath: ArtSourceInstance.CollectionPublicPath,
+                        providerPath: ArtSourceInstance.CollectionPrivatePath,
+                        publicCollection: Type<&ArtSourceInstance.Collection{ArtSourceInstance.CollectionPublic}>(),
+                        publicLinkedType: Type<&ArtSourceInstance.Collection{ArtSourceInstance.CollectionPublic, NonFungibleToken.CollectionPublic, NonFungibleToken.Receiver, MetadataViews.ResolverCollection}>(),
+                        providerLinkedType: Type<&ArtSourceInstance.Collection{ArtSourceInstance.CollectionPublic, NonFungibleToken.CollectionPublic, NonFungibleToken.Provider, MetadataViews.ResolverCollection}>(),
                         createEmptyCollectionFunction: (fun (): @NonFungibleToken.Collection {
-                            return <- ArtSource.createEmptyCollection()
+                            return <- ArtSourceInstance.createEmptyCollection()
                         })
                     )
                 case Type<MetadataViews.NFTCollectionDisplay>():
@@ -169,7 +124,7 @@ pub contract ArtSource: NonFungibleToken {
                         mediaType: "image/png"
                     )
                     return MetadataViews.NFTCollectionDisplay(
-                        name: "ArtSource",
+                        name: "ArtSourceInstance",
                         description: "",
                         externalURL: MetadataViews.ExternalURL(""),
                         squareImage: media,
@@ -219,7 +174,7 @@ pub contract ArtSource: NonFungibleToken {
             return self.imageIpfsCid
         }
 
-        pub fun getCodes(): [{ICode}] {
+        pub fun getCodes(): [{ArtSource.ICode}] {
             return self.codes
         }
 
@@ -234,27 +189,15 @@ pub contract ArtSource: NonFungibleToken {
         pub fun getUpdatedAt(): UFix64 {
             return self.updatedAt
         }
-
-        pub fun getMaxNumOfInstances(): UInt32? {
-            return self.maxNumOfInstances
-        }
-
-        pub fun getNumOfInstances(): UInt32 {
-            return self.numOfInstances
-        }
-
-        access(account) fun incrementNumOfInstances() {
-            self.numOfInstances = self.numOfInstances + 1
-        }
     }
 
     pub resource interface CollectionPublic {
         pub fun deposit(token: @NonFungibleToken.NFT)
         pub fun getIDs(): [UInt64]
         pub fun borrowNFT(id: UInt64): &NonFungibleToken.NFT
-        pub fun borrowArtSourcePublic(id: UInt64): &AnyResource{ArtSource.NFTPublic}? {
+        pub fun borrowArtSourceInstancePublic(id: UInt64): &AnyResource{ArtSourceInstance.NFTPublic}? {
             post {
-                (result == nil) || (result?.id == id): "Cannot borrow ArtSource reference: the ID of the returned reference is incorrect"
+                (result == nil) || (result?.id == id): "Cannot borrow ArtSourceInstance reference: the ID of the returned reference is incorrect"
             }
         }
     }
@@ -273,7 +216,7 @@ pub contract ArtSource: NonFungibleToken {
         }
 
         pub fun deposit(token: @NonFungibleToken.NFT) {
-            let token <- token as! @ArtSource.NFT
+            let token <- token as! @ArtSourceInstance.NFT
             let id: UInt64 = token.id
             self.ownedNFTs[id] <-! token
             emit Deposit(id: id, to: self.owner?.address)
@@ -287,45 +230,52 @@ pub contract ArtSource: NonFungibleToken {
             return (&self.ownedNFTs[id] as &NonFungibleToken.NFT?)!
         }
  
-        pub fun borrowArtSourcePublic(id: UInt64): &AnyResource{ArtSource.NFTPublic}? {
+        pub fun borrowArtSourceInstancePublic(id: UInt64): &AnyResource{ArtSourceInstance.NFTPublic}? {
             if self.ownedNFTs[id] != nil {
-                return (&self.ownedNFTs[id] as auth &NonFungibleToken.NFT?) as! &AnyResource{ArtSource.NFTPublic}?
+                return (&self.ownedNFTs[id] as auth &NonFungibleToken.NFT?) as! &AnyResource{ArtSourceInstance.NFTPublic}?
             }
             return nil
         }
 
-        pub fun borrowArtSource(id: UInt64): &ArtSource.NFT? {
+        pub fun borrowArtSourceInstance(id: UInt64): &ArtSourceInstance.NFT? {
             if self.ownedNFTs[id] != nil {
-                return (&self.ownedNFTs[id] as auth &NonFungibleToken.NFT?) as! &ArtSource.NFT?
+                return (&self.ownedNFTs[id] as auth &NonFungibleToken.NFT?) as! &ArtSourceInstance.NFT?
             }
             return nil
         }
 
         pub fun borrowViewResolver(id: UInt64): &AnyResource{MetadataViews.Resolver} {
-            let nft = (&self.ownedNFTs[id] as auth &NonFungibleToken.NFT?)! as! &ArtSource.NFT
+            let nft = (&self.ownedNFTs[id] as auth &NonFungibleToken.NFT?)! as! &ArtSourceInstance.NFT
             return nft as &AnyResource{MetadataViews.Resolver}
         }
 
-        // Mint a sourceNFT
-        pub fun createSource(
-            artType: String,
-            title: String,
-            description: String,
-            imageIpfsCid: String,
-            artistName: String,
-            codes: [{ICode}]
+        // Mint an instanceNFT from a sourceNFT
+        pub fun createInstance(
+            sourceNFT: &ArtSource.NFT
         ): UInt64 {
-            let sourceNFT <- create NFT(
-                creatorAddress: self.owner!.address,
-                artType: artType,
-                title: title,
-                description: description,
-                imageIpfsCid: imageIpfsCid,
-                artistName: artistName,
-                codes: codes
+            pre {
+                sourceNFT.maxNumOfInstances == nil || sourceNFT.numOfInstances < sourceNFT.maxNumOfInstances!: "Cannot create an instance"
+            }
+            sourceNFT.incrementNumOfInstances()
+            let codes = sourceNFT.getCodes()
+            for code in codes {
+                code.createInstanceHook()
+            }
+            let instanceNFT <- create NFT(
+                sourceID: sourceNFT.id,
+                creatorAddress: sourceNFT.creatorAddress,
+                artType: sourceNFT.artType,
+                title: sourceNFT.title,
+                description: sourceNFT.description,
+                imageIpfsCid: sourceNFT.imageIpfsCid,
+                artistName: sourceNFT.artistName,
+                codes: codes,
+                version: sourceNFT.version,
+                createdAt: sourceNFT.createdAt,
+                updatedAt: sourceNFT.updatedAt
             )
-            let id = sourceNFT.id
-            self.deposit(token: <- sourceNFT)
+            let id = instanceNFT.id
+            self.deposit(token: <- instanceNFT)
             return id
         }
 
@@ -340,12 +290,12 @@ pub contract ArtSource: NonFungibleToken {
 
     init() {
         self.totalSupply = 0
-        self.CollectionStoragePath = /storage/ArtSourceCollection
-        self.CollectionPublicPath = /public/ArtSourceCollection
-        self.CollectionPrivatePath = /private/ArtSourceCollection
+        self.CollectionStoragePath = /storage/ArtSourceInstanceCollection
+        self.CollectionPublicPath = /public/ArtSourceInstanceCollection
+        self.CollectionPrivatePath = /private/ArtSourceInstanceCollection
 
         self.account.save(<- create Collection(), to: self.CollectionStoragePath)
-        self.account.link<&ArtSource.Collection{NonFungibleToken.CollectionPublic, ArtSource.CollectionPublic, MetadataViews.ResolverCollection}>(
+        self.account.link<&ArtSourceInstance.Collection{NonFungibleToken.CollectionPublic, ArtSourceInstance.CollectionPublic, MetadataViews.ResolverCollection}>(
             self.CollectionPublicPath,
             target: self.CollectionStoragePath
         )

@@ -53,7 +53,7 @@ pub fun main(address: Address):  [Source] {
     let ids = collection.getIDs()
     for id in ids {
         let nft = collection.borrowArtSourcePublic(id: id)!
-        let code = nft.getCode()
+        let code = nft.getCodes()[0].getCode()
         res.append(Source(
             sourceId: nft.id,
             ownerAddress: address,
@@ -62,7 +62,7 @@ pub fun main(address: Address):  [Source] {
             title: nft.getTitle(),
             description: nft.getDescription(),
             imageIpfsCid: nft.getImageIpfsCid(),
-            code: code != nil ? code! : nft.getContractCode()!.getCode(),
+            code: code,
             version: nft.getVersion(),
             createdAt: nft.getCreatedAt(),
             updatedAt: nft.getUpdatedAt()
