@@ -1,6 +1,8 @@
 {
 	"contracts": {
 		"ArtSource": "cadence/contracts/ArtSource.cdc",
+		"ArtSourceCodes": "cadence/contracts/ArtSourceCodes.cdc",
+		"ArtSourceInstance": "cadence/contracts/ArtSourceInstance.cdc",
 		"ArtSourceShowcase": "cadence/contracts/ArtSourceShowcase.cdc",
 		"MetadataViews": "cadence/contracts/MetadataViews.cdc",
 		"NonFungibleToken": "cadence/contracts/NonFungibleToken.cdc"
@@ -13,7 +15,7 @@
 	"accounts": {
 		"default": {
 			"address": "f3fcd2c1a78f5eee",
-			"key": "d88e2eb41d1e506f1514484e5291a58a96b894e53d50c98ba423ce30be40f273"
+			"key": "c76f9c1bafeed5eec4f2bfbf33979a962b879005b93015fd67e1411de4b1ec23"
 		},
 		"emulator-account": {
 			"address": "f8d6e0586b0a20c7",
@@ -24,6 +26,8 @@
 		"emulator": {
 			"default": [
 				"ArtSource",
+				"ArtSourceCodes",
+				"ArtSourceInstance",
 				"ArtSourceShowcase",
 				"MetadataViews",
 				"NonFungibleToken"

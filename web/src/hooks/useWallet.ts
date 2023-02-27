@@ -15,7 +15,7 @@ export function useWallet(): {
       'accessNode.api': flowNetwork === 'mainnet' ? 'https://rest-mainnet.onflow.org' : 'https://rest-testnet.onflow.org',
       'discovery.wallet': flowNetwork === 'mainnet' ? 'https://fcl-discovery.onflow.org/authn' : 'https://fcl-discovery.onflow.org/testnet/authn',
       'app.detail.title': 'art/src',
-      'app.detail.icon': 'https://sakutaro.on.fleek.co/favicon.ico', // TODO: update
+      'app.detail.icon': 'https://artsrc.web.app/img/logo.png', // TODO: update
       'fcl.network': flowNetwork,
     });
     fcl.currentUser().subscribe((currentUser: any) => setAccount({ ...currentUser }));
