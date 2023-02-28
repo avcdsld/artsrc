@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import * as fcl from '@onflow/fcl';
-
-const network = process.env.FLOW_NETWORK || 'testnet';
+import { flowNetwork } from 'config';
 
 const useFlowQuery = (
   script: string,
@@ -38,7 +37,7 @@ const useFlowQuery = (
         .config()
         .put(
           "accessNode.api",
-          network === "mainnet" ? "https://rest-mainnet.onflow.org" : "https://rest-testnet.onflow.org"
+          flowNetwork === "mainnet" ? "https://rest-mainnet.onflow.org" : "https://rest-testnet.onflow.org"
         );
       const sources = await fcl.query({ cadence: script, args });
       setData(sources);

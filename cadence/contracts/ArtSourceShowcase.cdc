@@ -68,4 +68,3 @@ pub contract ArtSourceShowcase {
         self.account.save(<- create Admin(), to: /storage/ArtSourceShowcaseAdmin)
     }
 }
- 

@@ -34,7 +34,7 @@ const SourceSummary = ({
         <SourceStats
           complete={false}
           paused={false}
-          startTime={BigInt(Math.floor(new Date().getTime() / 1000))} // TODO: set startTime?
+          startTime={source.createdAt}
         />
       </Box>
       <Box mt={2}>

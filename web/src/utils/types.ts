@@ -69,6 +69,8 @@ export interface Source {
   description: string;
   imageIpfsCid: string;
   artistName?: string;
+  createdAt?: string;
+  updatedAt?: string;
   // active: boolean;
   // paused: boolean;
   // complete: boolean;

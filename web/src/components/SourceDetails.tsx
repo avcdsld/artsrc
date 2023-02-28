@@ -13,6 +13,7 @@ import Loading from './Loading';
 import PurchaseSource from './PurchaseSource';
 import Collapsible from './Collapsible';
 import Address from './Address';
+import moment from 'moment';
 
 interface Props {
   ownerAddress: string;
@@ -45,19 +46,27 @@ const SourceDetails = ({ ownerAddress, sourceId }: Props) => {
   }
 
   const source = data;
-
   const {
-    title,
+    artType,
+    createdAt,
     description,
     artistName,
-    // website,
-    // license,
-    // paused,
-    // complete,
-    // invocations,
-    // maxInvocations,
-    // scriptJSON,
+    title,
+    code,
+    updatedAt,
+    version,
   } = source;
+
+  const getContractName = (str) => {
+    if (!str) {
+      return '';
+    }
+    const regexResult = str.match(/pub\s+contract\s+(.+?)\s*?[:{]/);
+    if (!regexResult) {
+      return '';
+    }
+    return regexResult.length >= 1 ? regexResult[1] : '';
+  };
 
   return (
     source && (
@@ -80,7 +89,7 @@ const SourceDetails = ({ ownerAddress, sourceId }: Props) => {
               <SourceStats
                 paused={false}
                 complete={false}
-                startTime={BigInt(Math.floor(new Date().getTime() / 1000))} // TODO: set startTime?
+                startTime={createdAt}
               />
 
               <Typography variant='h4' mt={3}>
@@ -88,8 +97,7 @@ const SourceDetails = ({ ownerAddress, sourceId }: Props) => {
               </Typography>
 
               <Typography variant='h6' mb={2}>
-                {artistName || 'Ara'}
-                {/* TODO: */}
+                {artistName}
               </Typography>
 
               <Divider
@@ -119,22 +127,44 @@ const SourceDetails = ({ ownerAddress, sourceId }: Props) => {
                 <Box sx={{ fontSize: 12 }}>{Math.floor(1)} %</Box>
               </Box> */}
 
-              <Box
-                sx={{
-                  display: 'flex',
-                  marginBottom: 3,
-                }}
-              >
-                <Button
-                  variant='contained'
-                  color='primary'
-                  onClick={() => {}}
-                  href={`/source/${ownerAddress?.toLowerCase()}/${sourceId}/edit`}
+              {artType === 'cadence' && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    marginBottom: 3,
+                  }}
                 >
-                  <span>RUN</span>
-                  <span style={{ marginLeft: 14 }}>CODE</span>
-                </Button>
-              </Box>
+                  <Button
+                    variant='contained'
+                    color='primary'
+                    target={'_blank'}
+                    href={`https://testnet.flowscan.org/contract/A.${ownerAddress
+                      ?.toLowerCase()
+                      .replace('0x', '')}.${getContractName(code)}`}
+                  >
+                    <span>VIEW</span>
+                    <span style={{ marginLeft: 14 }}>CONTRACT</span>
+                  </Button>
+                </Box>
+              )}
+              {artType === 'p5js' && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    marginBottom: 3,
+                  }}
+                >
+                  <Button
+                    variant='contained'
+                    color='primary'
+                    onClick={() => {}}
+                    href={`/source/${ownerAddress?.toLowerCase()}/${sourceId}/edit`}
+                  >
+                    <span>RUN</span>
+                    <span style={{ marginLeft: 14 }}>CODE</span>
+                  </Button>
+                </Box>
+              )}
 
               <PurchaseSource source={source} />
             </Box>
@@ -154,19 +184,22 @@ const SourceDetails = ({ ownerAddress, sourceId }: Props) => {
             <Box sx={{ display: 'flex', marginTop: 4 }}>
               <Box mr={6}>
                 <Title>Art Type</Title>
-                <Typography>p5.js</Typography>
+                <Typography>{artType}</Typography>
               </Box>
               <Box mr={6}>
                 <Title>Version</Title>
-                <Typography>1</Typography>
+                <Typography>{version}</Typography>
               </Box>
               <Box mr={6}>
                 <Title>Last Updated</Title>
-                <Typography>2023/02/24</Typography>
+                <Typography>
+                  {updatedAt &&
+                    moment.unix(parseInt(updatedAt)).format('MMM DD, YYYY')}
+                </Typography>
               </Box>
               <Box mr={6}>
-                <Title>Creator</Title>
-                <Typography>Ara</Typography>
+                <Title>Artist</Title>
+                <Typography>{artistName}</Typography>
               </Box>
             </Box>
           </Grid>

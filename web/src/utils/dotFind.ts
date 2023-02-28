@@ -1,13 +1,13 @@
 import * as fcl from '@onflow/fcl';
+import { flowNetwork } from 'config';
 
-const network = process.env.FLOW_NETWORK || 'testnet';
-const dotFindAddress = '0x35717efbbce11c74'; // Testnet. Mainnet: 0x097bafa4e0b48eef
+const dotFindAddress = flowNetwork === 'mainnet' ? '0x097bafa4e0b48eef' : '0x35717efbbce11c74';
 
 export const resolveDotFindName = async (address: string): Promise<string | null> => {
   try {
     fcl.config().put(
-      "accessNode.api",
-      network === "mainnet" ? "https://rest-mainnet.onflow.org" : "https://rest-testnet.onflow.org"
+      'accessNode.api',
+      flowNetwork === 'mainnet' ? 'https://rest-mainnet.onflow.org' : 'https://rest-testnet.onflow.org'
     );
     const name = await fcl.query({
       cadence: `\

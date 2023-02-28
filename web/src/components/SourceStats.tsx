@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography';
 interface Props {
   complete: boolean;
   paused: boolean;
-  startTime?: BigInt;
+  startTime?: string;
 }
 
 const SourceStats = ({ complete, paused, startTime }: Props) => {

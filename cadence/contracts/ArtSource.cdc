@@ -29,6 +29,7 @@ pub contract ArtSource: NonFungibleToken {
         pub fun getTitle(): String
         pub fun getDescription(): String
         pub fun getImageIpfsCid(): String
+        pub fun getArtistName(): String
         pub fun getCodes(): [&{ICode}]
         pub fun getVersion(): UInt16
         pub fun getCreatedAt(): UFix64
@@ -228,6 +229,10 @@ pub contract ArtSource: NonFungibleToken {
 
         pub fun getImageIpfsCid(): String {
             return self.imageIpfsCid
+        }
+
+        pub fun getArtistName(): String {
+            return self.artistName
         }
 
         pub fun getCodes(): [&{ICode}] {

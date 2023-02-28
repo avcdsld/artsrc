@@ -22,3 +22,5 @@ flow scripts execute ./cadence/scripts/get_nft_metadata.cdc f3fcd2c1a78f5eee 3
 flow scripts execute ./cadence/scripts/get_user_nfts.cdc f3fcd2c1a78f5eee
 
 flow scripts execute ./cadence/scripts/get_showcase_nfts.cdc 0 8
+
+flow scripts execute ./cadence/scripts/get_user_nft.cdc f3fcd2c1a78f5eee 1

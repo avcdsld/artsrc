@@ -20,8 +20,8 @@ const SourceList = () => {
   const theme = useTheme();
   const [highestSourceId, setHighestSourceId] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
-  const upToIndex = currentPage * sourcesPerPage;
-  const fromIndex = sourcesPerPage;
+  const fromIndex = currentPage * sourcesPerPage;
+  const upToIndex = fromIndex + sourcesPerPage;
   const [orderDirection, setOrderDirection] = useState<OrderDirection>(
     OrderDirection.DESC
   );

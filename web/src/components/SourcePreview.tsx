@@ -18,7 +18,6 @@ import Loading from './Loading';
 interface Props {
   ownerAddress: string;
   sourceId: string;
-  invocation?: BigInt;
   height?: number | string;
   showLiveViewLink?: boolean;
   showImageLink?: boolean;
@@ -27,7 +26,6 @@ interface Props {
 const SourcePreview = ({
   ownerAddress,
   sourceId,
-  invocation,
   showLiveViewLink,
   showImageLink,
 }: Props) => {

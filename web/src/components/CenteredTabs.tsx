@@ -35,13 +35,13 @@ const CenteredTabs = (props: any) => {
           centered
           variant='fullWidth'
         >
-          {props.labels.map((label: string) => (
-            <Tab label={label}></Tab>
+          {props.labels.map((label: string, index: number) => (
+            <Tab label={label} key={'tab-' + index}></Tab>
           ))}
         </Tabs>
       </Box>
       {props.children.map((child: any, index: number) => (
-        <TabPanel value={value} index={index} key={index}>
+        <TabPanel value={value} index={index} key={'tab-panel-' + index}>
           {child}
         </TabPanel>
       ))}

@@ -44,7 +44,7 @@ pub struct Source {
   }
 }
 
-pub fun main(address: Address):  [Source] {
+pub fun main(address: Address, id: UInt64): [Source] {
     let account = getAccount(address)
 
     let collection = account
@@ -52,25 +52,33 @@ pub fun main(address: Address):  [Source] {
         .borrow<&{ArtSource.CollectionPublic}>()
         ?? panic("Could not borrow a reference to the collection")
 
-    var res: [Source] = []
-    let ids = collection.getIDs()
-    for id in ids {
-        let nft = collection.borrowArtSourcePublic(id: id)!
-        let code = nft.getCodes()[0].getCode()
-        res.append(Source(
-            sourceId: nft.id,
-            ownerAddress: address,
-            artType: nft.getArtType(),
-            creatorAddress: nft.getCreatorAddress(),
-            title: nft.getTitle(),
-            description: nft.getDescription(),
-            imageIpfsCid: nft.getImageIpfsCid(),
-            artistName: nft.getArtistName(),
-            code: code,
-            version: nft.getVersion(),
-            createdAt: nft.getCreatedAt(),
-            updatedAt: nft.getUpdatedAt()
-        ))
+    let nft = collection.borrowArtSourcePublic(id: id)!
+
+    // TODO: replace to nft.getArtistName()
+    let traits = (nft.resolveView(Type<MetadataViews.Traits>())! as! MetadataViews.Traits)!
+    var artistName = ""
+    for trait in traits.traits {
+      if trait.name == "artistName" {
+        artistName = (trait.value as! String)!
+      }
     }
-    return res
+
+    let code = nft.getCodes()[0].getCode()
+    return [
+        Source(
+          sourceId: nft.id,
+          ownerAddress: address,
+          artType: nft.getArtType(),
+          creatorAddress: nft.getCreatorAddress(),
+          title: nft.getTitle(),
+          description: nft.getDescription(),
+          imageIpfsCid: nft.getImageIpfsCid(),
+          // artistName: nft.getArtistName(),
+          artistName: artistName,
+          code: code,
+          version: nft.getVersion(),
+          createdAt: nft.getCreatedAt(),
+          updatedAt: nft.getUpdatedAt()
+        )
+    ]
 }
