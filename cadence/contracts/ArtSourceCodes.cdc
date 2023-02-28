@@ -2,25 +2,29 @@ import "ArtSource"
 
 pub contract ArtSourceCodes {
 
-    // Format for tying deployed Cadence contract code.
-    pub struct ContractCode: ArtSource.ICode {
+    // Resource for tying deployed Cadence contract code.
+    pub resource ContractCode: ArtSource.ICode {
         pub let accountAddress: Address
         pub let contractName: String
         pub let extraMetadata: {String: AnyStruct}
+        pub let isCodeInstance: Bool
 
         init(
             accountAddress: Address,
             contractName: String,
-            authAccountForOwnershipChecking: &AuthAccount,
-            extraMetadata: {String: AnyStruct}
+            authAccountForOwnershipChecking: &AuthAccount?,
+            extraMetadata: {String: AnyStruct},
+            isCodeInstance: Bool
+
         ) {
             post {
-                authAccountForOwnershipChecking.address == accountAddress: "Invalid account"
-                authAccountForOwnershipChecking.contracts.get(name: self.contractName) != nil: "Invalid contract ownership"
+                isCodeInstance || authAccountForOwnershipChecking!.address == accountAddress: "Invalid account"
+                isCodeInstance || authAccountForOwnershipChecking!.contracts.get(name: self.contractName) != nil: "Invalid contract ownership"
             }
             self.accountAddress = accountAddress
             self.contractName = contractName
             self.extraMetadata = extraMetadata
+            self.isCodeInstance = isCodeInstance
         }
 
         pub fun getCode(): String {
@@ -31,13 +35,34 @@ pub contract ArtSourceCodes {
             return self.extraMetadata
         }
 
-        pub fun createInstanceHook() {
-            return
+        pub fun createInstance(): @{ArtSource.ICode} {
+            return <- create ContractCode(
+                accountAddress: self.accountAddress,
+                contractName: self.contractName,
+                authAccountForOwnershipChecking: nil,
+                extraMetadata: self.extraMetadata,
+                isCodeInstance: true
+            )
         }
     }
 
-    // Format for tying p5.js creative code.
-    pub struct P5JsCode: ArtSource.ICode {
+    pub fun createContractCode(
+        accountAddress: Address,
+        contractName: String,
+        authAccountForOwnershipChecking: &AuthAccount,
+        extraMetadata: {String: AnyStruct}
+    ): @ContractCode {
+        return <- create ContractCode(
+            accountAddress: accountAddress,
+            contractName: contractName,
+            authAccountForOwnershipChecking: authAccountForOwnershipChecking,
+            extraMetadata: extraMetadata,
+            isCodeInstance: false
+        )
+    }
+
+    // Resource for tying p5.js creative code.
+    pub resource P5JsCode: ArtSource.ICode {
         pub let code: String
         pub var extraMetadata: {String: AnyStruct}
 
@@ -61,10 +86,14 @@ pub contract ArtSourceCodes {
             return self.extraMetadata
         }
 
-        pub fun createInstanceHook() {
+        pub fun createInstance(): @{ArtSource.ICode} {
             let block = getCurrentBlock()
             self.extraMetadata.insert(key: "blockId", self.idToString(block.id))
             self.extraMetadata.insert(key: "blockTimestamp", block.timestamp.toString())
+            return <- create P5JsCode(
+                code: self.code,
+                extraMetadata: self.extraMetadata
+            )
         }
 
         priv fun idToString(_ id: [UInt8; 32]): String {
@@ -78,5 +107,15 @@ pub contract ArtSourceCodes {
             res = res.concat("]")
             return res
         }
+    }
+
+    pub fun createP5JsCode(
+        code: String,
+        extraMetadata: {String: AnyStruct}
+    ): @P5JsCode {
+        return <- create P5JsCode(
+            code: code,
+            extraMetadata: extraMetadata
+        )
     }
 }

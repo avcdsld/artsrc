@@ -27,8 +27,8 @@ transaction(
             description: description,
             imageIpfsCid: imageIpfsCid,
             artistName: artistName,
-            codes: [
-                ArtSourceCodes.ContractCode(
+            codes: <- [
+                <- ArtSourceCodes.createContractCode(
                     accountAddress: contractAccountAddress,
                     contractName: contractName,
                     authAccountForOwnershipChecking: &signer as &AuthAccount,

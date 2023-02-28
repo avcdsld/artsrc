@@ -24,7 +24,7 @@ pub contract ArtSourceInstance: NonFungibleToken {
         pub fun getTitle(): String
         pub fun getDescription(): String
         pub fun getImageIpfsCid(): String
-        pub fun getCodes(): [{ArtSource.ICode}]
+        pub fun getCodes(): [&{ArtSource.ICode}]
         pub fun getVersion(): UInt16
         pub fun getCreatedAt(): UFix64
         pub fun getUpdatedAt(): UFix64
@@ -39,7 +39,7 @@ pub contract ArtSourceInstance: NonFungibleToken {
         pub let description: String
         pub let imageIpfsCid: String
         pub let artistName: String
-        pub let codes: [{ArtSource.ICode}]
+        pub let codes: @[{ArtSource.ICode}]
         pub let version: UInt16
         pub let createdAt: UFix64
         pub let updatedAt: UFix64
@@ -52,7 +52,7 @@ pub contract ArtSourceInstance: NonFungibleToken {
             description: String,
             imageIpfsCid: String,
             artistName: String,
-            codes: [{ArtSource.ICode}],
+            codes: @[{ArtSource.ICode}],
             version: UInt16,
             createdAt: UFix64,
             updatedAt: UFix64
@@ -67,7 +67,7 @@ pub contract ArtSourceInstance: NonFungibleToken {
             self.description = description
             self.imageIpfsCid = imageIpfsCid
             self.artistName = artistName
-            self.codes = codes
+            self.codes <- codes
             self.version = version
             self.createdAt = createdAt
             self.updatedAt = updatedAt
@@ -139,12 +139,15 @@ pub contract ArtSourceInstance: NonFungibleToken {
                     traits.append(MetadataViews.Trait(name: "description", value: self.description, displayType: nil, rarity: nil))
                     traits.append(MetadataViews.Trait(name: "imageIpfsCid", value: self.imageIpfsCid, displayType: nil, rarity: nil))
                     traits.append(MetadataViews.Trait(name: "artistName", value: self.artistName, displayType: nil, rarity: nil))
-                    for index, code in self.codes {
+                    var index = 0
+                    while index < self.codes.length {
                         var name = "code"
                         if index > 0 {
                             name.concat(index.toString())
                         }
-                        traits.append(MetadataViews.Trait(name: name, value: code.getCode(), displayType: nil, rarity: nil))
+                        let ref = &self.codes[index] as &{ArtSource.ICode}
+                        traits.append(MetadataViews.Trait(name: name, value: ref!.getCode(), displayType: nil, rarity: nil))
+                        index = index + 1
                     }
                     traits.append(MetadataViews.Trait(name: "version", value: self.version, displayType: nil, rarity: nil))
                     traits.append(MetadataViews.Trait(name: "createdAt", value: self.createdAt.toString(), displayType: nil, rarity: nil))
@@ -174,8 +177,14 @@ pub contract ArtSourceInstance: NonFungibleToken {
             return self.imageIpfsCid
         }
 
-        pub fun getCodes(): [{ArtSource.ICode}] {
-            return self.codes
+        pub fun getCodes(): [&{ArtSource.ICode}] {
+            var res: [&{ArtSource.ICode}] = []
+            var index = 0
+            while index < self.codes.length {
+                res.append(&self.codes[index] as &{ArtSource.ICode})
+                index = index + 1
+            }
+            return res
         }
 
         pub fun getVersion(): UInt16 {
@@ -188,6 +197,10 @@ pub contract ArtSourceInstance: NonFungibleToken {
 
         pub fun getUpdatedAt(): UFix64 {
             return self.updatedAt
+        }
+
+        destroy() {
+            destroy self.codes
         }
     }
 
@@ -257,9 +270,10 @@ pub contract ArtSourceInstance: NonFungibleToken {
                 sourceNFT.maxNumOfInstances == nil || sourceNFT.numOfInstances < sourceNFT.maxNumOfInstances!: "Cannot create an instance"
             }
             sourceNFT.incrementNumOfInstances()
-            let codes = sourceNFT.getCodes()
-            for code in codes {
-                code.createInstanceHook()
+            var codes: @[{ArtSource.ICode}] <- []
+            let codeRefs = sourceNFT.getCodes()
+            for codeRef in codeRefs {
+                codes.append(<- codeRef.createInstance())
             }
             let instanceNFT <- create NFT(
                 sourceID: sourceNFT.id,
@@ -269,7 +283,7 @@ pub contract ArtSourceInstance: NonFungibleToken {
                 description: sourceNFT.description,
                 imageIpfsCid: sourceNFT.imageIpfsCid,
                 artistName: sourceNFT.artistName,
-                codes: codes,
+                codes: <- codes,
                 version: sourceNFT.version,
                 createdAt: sourceNFT.createdAt,
                 updatedAt: sourceNFT.updatedAt

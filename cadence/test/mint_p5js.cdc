@@ -19,8 +19,8 @@ transaction {
             description: "testDescription",
             imageIpfsCid: "testImageIpfsCid",
             artistName: "testArtistName",
-            codes: [
-                ArtSourceCodes.P5JsCode(
+            codes: <- [
+                <- ArtSourceCodes.createP5JsCode(
                     code: "testCode",
                     extraMetadata: {}
                 )

@@ -13,10 +13,10 @@ pub contract ArtSource: NonFungibleToken {
     pub let CollectionPrivatePath: PrivatePath
     pub var totalSupply: UInt64
 
-    pub struct interface ICode {
+    pub resource interface ICode {
         pub fun getCode(): String
         pub fun getExtraMetadata(): {String: AnyStruct}
-        pub fun createInstanceHook()
+        pub fun createInstance(): @{ICode}
     }
 
     pub resource interface NFTPublic {
@@ -29,7 +29,7 @@ pub contract ArtSource: NonFungibleToken {
         pub fun getTitle(): String
         pub fun getDescription(): String
         pub fun getImageIpfsCid(): String
-        pub fun getCodes(): [{ICode}]
+        pub fun getCodes(): [&{ICode}]
         pub fun getVersion(): UInt16
         pub fun getCreatedAt(): UFix64
         pub fun getUpdatedAt(): UFix64
@@ -47,7 +47,7 @@ pub contract ArtSource: NonFungibleToken {
         access(account) var description: String
         access(account) var imageIpfsCid: String
         access(account) var artistName: String
-        access(account) var codes: [{ICode}]
+        access(account) var codes: @[{ICode}]
         access(account) var version: UInt16
         access(account) var createdAt: UFix64
         access(account) var updatedAt: UFix64
@@ -61,7 +61,7 @@ pub contract ArtSource: NonFungibleToken {
             description: String,
             imageIpfsCid: String,
             artistName: String,
-            codes: [{ICode}]
+            codes: @[{ICode}]
         ) {
             ArtSource.totalSupply = ArtSource.totalSupply + 1
             self.id = ArtSource.totalSupply
@@ -71,7 +71,7 @@ pub contract ArtSource: NonFungibleToken {
             self.description = description
             self.imageIpfsCid = imageIpfsCid
             self.artistName = artistName
-            self.codes = codes
+            self.codes <- codes
             self.version = 1
             let currentBlock = getCurrentBlock()
             self.createdAt = currentBlock.timestamp
@@ -85,7 +85,7 @@ pub contract ArtSource: NonFungibleToken {
             description: String?,
             imageIpfsCid: String?,
             artistName: String?,
-            codes: [{ICode}]?
+            codes: @[{ICode}]
         ) {
             var updated = false
             if title != nil && title! != self.title {
@@ -104,10 +104,18 @@ pub contract ArtSource: NonFungibleToken {
                 self.artistName = artistName!
                 updated = true
             }
-            if codes != nil {
-                self.codes = codes!
+            if codes.length > 0 {
+                while self.codes.length > 0 {
+                    let code <- self.codes.remove(at: 0)
+                    destroy code
+                }
+                while codes.length > 0 {
+                    let code <- codes.remove(at: 0)
+                    self.codes.append(<- code!)
+                }
                 updated = true
             }
+            destroy codes
             if updated {
                 self.version = self.version + 1
                 self.updatedAt = getCurrentBlock().timestamp
@@ -184,12 +192,15 @@ pub contract ArtSource: NonFungibleToken {
                     traits.append(MetadataViews.Trait(name: "description", value: self.description, displayType: nil, rarity: nil))
                     traits.append(MetadataViews.Trait(name: "imageIpfsCid", value: self.imageIpfsCid, displayType: nil, rarity: nil))
                     traits.append(MetadataViews.Trait(name: "artistName", value: self.artistName, displayType: nil, rarity: nil))
-                    for index, code in self.codes {
+                    var index = 0
+                    while index < self.codes.length {
                         var name = "code"
                         if index > 0 {
                             name.concat(index.toString())
                         }
-                        traits.append(MetadataViews.Trait(name: name, value: code.getCode(), displayType: nil, rarity: nil))
+                        let ref = &self.codes[index] as &{ICode}
+                        traits.append(MetadataViews.Trait(name: name, value: ref!.getCode(), displayType: nil, rarity: nil))
+                        index = index + 1
                     }
                     traits.append(MetadataViews.Trait(name: "version", value: self.version, displayType: nil, rarity: nil))
                     traits.append(MetadataViews.Trait(name: "createdAt", value: self.createdAt.toString(), displayType: nil, rarity: nil))
@@ -219,8 +230,14 @@ pub contract ArtSource: NonFungibleToken {
             return self.imageIpfsCid
         }
 
-        pub fun getCodes(): [{ICode}] {
-            return self.codes
+        pub fun getCodes(): [&{ICode}] {
+            var res: [&{ICode}] = []
+            var index = 0
+            while index < self.codes.length {
+                res.append(&self.codes[index] as &{ICode})
+                index = index + 1
+            }
+            return res
         }
 
         pub fun getVersion(): UInt16 {
@@ -245,6 +262,10 @@ pub contract ArtSource: NonFungibleToken {
 
         access(account) fun incrementNumOfInstances() {
             self.numOfInstances = self.numOfInstances + 1
+        }
+
+        destroy() {
+            destroy self.codes
         }
     }
 
@@ -313,7 +334,7 @@ pub contract ArtSource: NonFungibleToken {
             description: String,
             imageIpfsCid: String,
             artistName: String,
-            codes: [{ICode}]
+            codes: @[{ICode}]
         ): UInt64 {
             let sourceNFT <- create NFT(
                 creatorAddress: self.owner!.address,
@@ -322,7 +343,7 @@ pub contract ArtSource: NonFungibleToken {
                 description: description,
                 imageIpfsCid: imageIpfsCid,
                 artistName: artistName,
-                codes: codes
+                codes: <- codes
             )
             let id = sourceNFT.id
             self.deposit(token: <- sourceNFT)
