@@ -10,9 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: yarn install --immutable --immutable-cache --check-cache
-        working-directory: web
       - uses: FirebaseExtended/action-hosting-deploy@v0
-        working-directory: web
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ARTSRC }}'
