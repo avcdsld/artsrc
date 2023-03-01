@@ -42,3 +42,8 @@
 ### Market
 
 - On the other hand, this product also makes it possible to earn money by selling the code itself as a work of art. Recently, the number of artists who use smart contracts to create artwork as their main job has been increasing, but they are currently only able to make money by creating NFT contracts. If smart contracts could be handled in their entirety, there would be more creative works of art.
+
+## Acknowledgments
+
+- This product is based on [the React Template provided by ArtBlocks](https://github.com/ArtBlocks/artblocks-engine-react) under the MIT license. Thank you very much.
+
